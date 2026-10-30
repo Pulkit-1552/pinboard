@@ -1,0 +1,223 @@
+:root {
+  --ink: #241c14;
+  --muted: #6e5c49;
+  --paper: #fffaf2;
+  --line: #eadcc8;
+  --cork: #c49262;
+  --cork-dark: #8d6844;
+  --pin: #c4372a;
+  --focus: #1d4a38;
+  color: var(--ink);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 248, 236, 0.35), transparent 26%),
+    radial-gradient(circle at 90% 10%, rgba(80, 42, 16, 0.18), transparent 28%),
+    linear-gradient(165deg, #e0b27a, var(--cork) 42%, var(--cork-dark));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.page {
+  width: min(980px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 40px 0 64px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 24px;
+  color: #2a1c10;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+h1,
+h2 {
+  font-family: Palatino, "Palatino Linotype", Georgia, serif;
+  font-weight: 600;
+}
+
+h1 {
+  margin: 0;
+  font-size: 3.2rem;
+  line-height: 0.95;
+}
+
+.lede {
+  max-width: 34ch;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.banner {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: #3a201c;
+  color: #fff6ef;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.paper {
+  background: var(--paper);
+  border: 1px solid rgba(70, 46, 22, 0.08);
+  box-shadow: 0 14px 30px rgba(60, 32, 10, 0.16);
+}
+
+.form,
+.note {
+  padding: 22px 20px 18px;
+}
+
+.form h2,
+.note h2 {
+  margin: 0 0 14px;
+}
+
+.form {
+  position: sticky;
+  top: 16px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus,
+button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+button {
+  border: 0;
+  background: var(--ink);
+  color: #fffaf2;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.list {
+  display: grid;
+  gap: 16px;
+}
+
+.note {
+  position: relative;
+  padding-top: 28px;
+}
+
+.note::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--pin);
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+  transform: translateX(-50%);
+}
+
+.note:nth-child(odd) {
+  transform: rotate(-0.4deg);
+}
+
+.note:nth-child(even) {
+  transform: rotate(0.45deg);
+}
+
+.note p {
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.note footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.note time,
+.status {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.note button {
+  background: transparent;
+  color: var(--pin);
+  padding: 0;
+}
+
+.status {
+  margin: 0;
+  padding: 8px 2px;
+}
+
+@media (max-width: 760px) {
+  .top,
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .form {
+    position: static;
+  }
+
+  h1 {
+    font-size: 2.6rem;
+  }
+}

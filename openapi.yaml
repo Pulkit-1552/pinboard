@@ -1,0 +1,138 @@
+openapi: 3.0.3
+info:
+  title: Pinboard API
+  version: 1.0.0
+  description: Short notices stored in Postgres. The browser talks only to nginx, which forwards /api to this service.
+servers:
+  - url: http://localhost
+    description: Edge nginx on port 80
+paths:
+  /api/health:
+    get:
+      summary: Liveness check
+      operationId: getHealth
+      responses:
+        "200":
+          description: Process is up. This does not prove the database is reachable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /api/notices:
+    get:
+      summary: List notices, newest first
+      operationId: listNotices
+      responses:
+        "200":
+          description: Current notices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notice"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    post:
+      summary: Pin a notice
+      operationId: createNotice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoticeInput"
+            example:
+              title: OS lab moved
+              body: Today the lab is in room 204, not 118.
+      responses:
+        "201":
+          description: Notice stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notice"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/notices/{id}:
+    delete:
+      summary: Take a notice down
+      operationId: deleteNotice
+      parameters:
+        - $ref: "#/components/parameters/NoticeId"
+      responses:
+        "204":
+          description: Notice removed
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          description: No notice with that id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/ServerError"
+components:
+  parameters:
+    NoticeId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    BadRequest:
+      description: Missing or invalid fields
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ServerError:
+      description: Unexpected failure
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    Health:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+    NoticeInput:
+      type: object
+      required: [title, body]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
+        body:
+          type: string
+          minLength: 1
+          maxLength: 500
+    Notice:
+      type: object
+      required: [id, title, body, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string

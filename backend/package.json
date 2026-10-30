@@ -1,0 +1,15 @@
+{
+  "name": "pinboard-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pinboard API. Stores notices in Postgres.",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.16.3"
+  }
+}
