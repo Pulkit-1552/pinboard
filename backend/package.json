@@ -5,8 +5,7 @@
   "type": "module",
   "description": "Pinboard API. Stores notices in Postgres.",
   "scripts": {
-    "start": "node src/index.js",
-    "test": "node --test"
+    "start": "node src/index.js"
   },
   "dependencies": {
     "express": "^4.21.2",

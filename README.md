@@ -32,62 +32,30 @@ curl -X POST http://localhost/api/notices \
   -d '{"title":"OS lab moved","body":"Room 204 today."}'
 ```
 
-Backend unit tests, no database needed:
+## GitHub Actions
 
-```bash
-cd backend && npm test
-```
+[`.github/workflows/ci_cd.yml`](.github/workflows/ci_cd.yml) runs on every push to `main`. It pushes three `linux/amd64` images to Docker Hub, then SSHs into EC2 and runs `docker compose pull` and `docker compose up -d`.
 
-## GitHub Actions → Docker Hub
+Repository secrets:
 
-The workflow [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml) runs on every push to `main`. It builds `linux/amd64` images (what a normal EC2 instance runs) and pushes:
+| Name | Value |
+|---|---|
+| `DOCKERHUB_USERNAME` | Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
+| `HOST` | EC2 public IP |
+| `USERNAME` | `ubuntu` |
+| `KEY` | Private SSH key, the whole file |
+| `PORT` | `22` |
 
-- `<dockerhub-username>/pinboard-frontend:latest`
-- `<dockerhub-username>/pinboard-backend:latest`
-- `<dockerhub-username>/pinboard-nginx:latest`
+Postgres user, password, and database are fixed in `docker-compose.yml` as `pinboard`. They are not secrets. On the instance, Compose only needs `DOCKERHUB_USERNAME` and `IMAGE_TAG`. The workflow passes those over SSH.
 
-Each image is also tagged with the git commit SHA.
+Make the three Docker Hub repositories public so EC2 can pull them.
 
-1. Create a Docker Hub access token: Account Settings → Personal access tokens. Do not use your account password.
-2. On the GitHub repo: Settings → Secrets and variables → Actions → New repository secret.
-   - `DOCKERHUB_USERNAME` — your Docker Hub username
-   - `DOCKERHUB_TOKEN` — the access token
-3. Push this project to GitHub on branch `main`. The Actions tab should show three green jobs.
-4. On Docker Hub, set the three repositories to Public so the EC2 instance can pull them without storing the token.
+## EC2, once
 
-## Run on AWS
+Security group: SSH `22` open to the internet (GitHub Actions is not your home IP), HTTP `80` open, `5432` closed.
 
-1. Launch an Ubuntu EC2 instance. In the security group allow:
-   - SSH `22` from your IP
-   - HTTP `80` from anywhere
-   - Do not open `5432`. Postgres stays on the private Docker network.
-2. Install Docker Engine and the Compose plugin from Docker's Ubuntu packages, then re-login so the `docker` group applies.
-3. Clone this repo on the instance. Copy the env file and edit it:
-
-```bash
-cp .env.example .env
-```
-
-Set `DOCKERHUB_USERNAME` to your Docker Hub username, `IMAGE_TAG=latest`, and a real `POSTGRES_PASSWORD`.
-
-4. Start from the published images:
-
-```bash
-docker compose pull
-docker compose up -d
-```
-
-5. Open `http://<ec2-public-ip>`.
-
-`docker compose pull` downloads the three images GitHub built. `up -d` starts them plus the official Postgres image. Nginx in the `pinboard-nginx` image is already configured. You do not install nginx on the Ubuntu host unless port 80 on the host is already taken.
-
-Update after a new push to `main`:
-
-```bash
-git pull
-docker compose pull
-docker compose up -d
-```
+Install Docker and git. Put the matching public key in `/home/ubuntu/.ssh/authorized_keys`. After the first push to `main`, the workflow clones this repo to `~/pinboard` and starts it. Open `http://<ec2-public-ip>`.
 
 ## What each file is for
 
@@ -97,7 +65,7 @@ docker compose up -d
 | `backend/` | Express API. Creates the `notices` table on startup. SQL uses parameters (`$1`, `$2`). |
 | `nginx/nginx.conf` | The routing you explain in a viva. `/api/` goes to `backend:3000`. `/` goes to `frontend:80`. |
 | `docker-compose.yml` | Starts db, backend, frontend, and nginx together and wires the network. |
-| `.github/workflows/docker-publish.yml` | Builds the three images on GitHub and pushes them to Docker Hub. |
+| `.github/workflows/ci_cd.yml` | Pushes the three images, then deploys them on EC2 over SSH. |
 | `openapi.yaml` | Contract for the API. |
 
 Only the edge nginx publishes a host port. Frontend, backend, and Postgres are reachable from other containers, not from the public internet.
